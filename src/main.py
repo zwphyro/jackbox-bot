@@ -1,153 +1,91 @@
 import asyncio
-from playwright.async_api import Page, async_playwright
+from openai import AsyncOpenAI
+from playwright.async_api import async_playwright
+from logging import getLogger
+from logger import configure_logging
+from llm_service import LLMService
+from bot_logic import SurviveTheInternetPhases
+
+configure_logging()
+log = getLogger(__name__)
 
 
-async def handle_image_question_phase(page: Page):
-    question_locator = page.locator(
-        ".blackBox",
-    )
-    await question_locator.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    question_text = await question_locator.inner_text()
-    print(question_text)
-
-    choices_container = page.locator(
-        "#choicesRegion > div > *",
-    )
-    await choices_container.first.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    options = await choices_container.all()
-    choices_data = [
-        {
-            "index": index,
-            "response": await option.locator("button").inner_text(),
-            "locator": option,
-        }
-        for index, option in enumerate(options)
-    ]
-
-    print([f"{x['index']}: {x['response']}" for x in choices_data])
-
-    if choices_data:
-        best_choice = max(choices_data, key=lambda x: len(x["response"]))
-        await best_choice["locator"].click()
-    else:
-        pass
-
-    finalImage = page.locator(".finalRoundImage")
-    await finalImage.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    image_description = await finalImage.get_attribute("aria-label")
-    prompt_text = await page.locator(".belowBlackBox").inner_text()
-    print(image_description, prompt_text)
-
-    await page.fill("#input-text-textarea", "Смешной заголовок к этому")
-    await page.click("#buttons > div > div > button")
+async def step_executor(coroutine, max_retries: int = 3):
+    phase_name = coroutine.__name__
+    for i in range(max_retries):
+        attempt = i + 1
+        try:
+            log.info(
+                f"Attempting queue task: {phase_name} (Attempt {attempt}/{max_retries})"
+            )
+            await coroutine()
+            log.info(f"Task {phase_name} executed successfully.")
+            return
+        except Exception as e:
+            log.error(f"Task {phase_name} failed on attempt {attempt}: {e}")
+            if attempt == max_retries:
+                log.critical(
+                    f"Task {phase_name} exhausted all retries. Proceeding to next queue item."
+                )
+            await asyncio.sleep(2)
 
 
-async def handle_text_question_phase(page: Page):
-    question_locator = page.locator(
-        ".belowBlackBox",
-    )
-    await question_locator.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    question_text = await question_locator.inner_text()
-
-    await page.fill("#input-text-textarea", "Мой первый ответ")
-    await page.click("#buttons > div > div > button")
-
-    black_box = page.locator(".blackBox")
-    await black_box.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    other_user_context = await black_box.inner_text()
-    prompt_text = await page.locator(".belowBlackBox").inner_text()
-
-    await page.fill("#input-text-textarea", "Смешной заголовок к этому")
-    await page.click("#buttons > div > div > button")
-
-
-async def handle_image_voting_phase(page: Page):
-    choices_container = page.locator("#choicesRegion > div > *")
-    await choices_container.first.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    options = await choices_container.all()
-    choices_data = [
-        {
-            "index": index,
-            "image_description": await option.locator(".voteThumbnail").inner_text(),
-            "player": await option.locator(".votePlayer").inner_text(),
-            "response": await option.locator(".voteResponse").inner_text(),
-            "locator": option,
-        }
-        for index, option in enumerate(options)
-    ]
-
-    print(
-        [
-            f"{x['index']}: {x['image_description']}, {x['player']}: {x['response']}"
-            for x in choices_data
-        ]
-    )
-
-    if choices_data:
-        best_choice = max(choices_data, key=lambda x: len(x["response"]))
-        await best_choice["locator"].click()
-    else:
-        pass
-
-
-async def handle_text_voting_phase(page: Page):
-    choices_container = page.locator("#choicesRegion > div > *")
-    await choices_container.first.wait_for(state="visible", timeout=5 * 60 * 1000)
-
-    options = await choices_container.all()
-    choices_data = [
-        {
-            "index": index,
-            "header": await option.locator(".voteTwistHeader").inner_text(),
-            "player": await option.locator(".votePlayer").inner_text(),
-            "response": await option.locator(".voteResponse").inner_text(),
-            "locator": option,
-        }
-        for index, option in enumerate(options)
-    ]
-
-    if choices_data:
-        best_choice = max(choices_data, key=lambda x: len(x["response"]))
-        await best_choice["locator"].click()
-    else:
-        pass
-
-
-async def play_survive_the_internet(page: Page):
-    for _ in range(3):
-        await handle_text_question_phase(page)
-        await handle_text_voting_phase(page)
-
-    await handle_image_question_phase(page)
-    await handle_image_voting_phase(page)
-
-
-async def run_jackbox_bot(room_code, bot_name):
+async def run_jackbox_bot(
+    bot_name: str,
+    room_code: str,
+    openai_base_url: str,
+    openai_api_key: str,
+    openai_model: str,
+):
+    log.info("Initializing Playwright and browser context.")
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch()
         context = await browser.new_context()
-        page = await context.new_page()
 
-        await page.goto("https://jackbox.fun/")
-        await page.wait_for_selector("#roomcode")
-        await page.fill("#roomcode", room_code)
-        await page.fill("#username", bot_name)
-        await page.click("#button-join")
-        await page.wait_for_timeout(3000)
+        client = AsyncOpenAI(base_url=openai_base_url, api_key=openai_api_key)
 
-        await play_survive_the_internet(page)
+        phases = await SurviveTheInternetPhases.join_game(
+            bot_name,
+            "https://jackbox.fun/",
+            room_code,
+            context,
+            5 * 60 * 1000,
+            LLMService(client, openai_model),
+        )
 
+        queue = [
+            phases.initial_response,
+            phases.twist_response,
+            phases.text_voting,
+            phases.initial_response,
+            phases.twist_response,
+            phases.text_voting,
+            phases.initial_response,
+            phases.twist_response,
+            phases.text_voting,
+            phases.image_choice,
+            phases.image_twist,
+            phases.image_voting,
+        ]
+
+        log.info(f"Queue populated with {len(queue)} sequential tasks.")
+
+        for task_coroutine in queue:
+            await step_executor(task_coroutine)
+
+        log.info("All queued tasks finished. Closing browser.")
         await browser.close()
 
 
 if __name__ == "__main__":
-    ROOM_CODE = "biqi"
+    ROOM_CODE = "xmkm"
     BOT_NAME = "RoboJoke"
+    OPENAI_BASE_URL = "https://router.huggingface.co/v1"
+    OPENAI_API_KEY = ""
+    OPENAI_MODEL = "openai/gpt-oss-20b:groq"
 
-    asyncio.run(run_jackbox_bot(ROOM_CODE, BOT_NAME))
+    asyncio.run(
+        run_jackbox_bot(
+            BOT_NAME, ROOM_CODE, OPENAI_BASE_URL, OPENAI_API_KEY, OPENAI_MODEL
+        )
+    )
