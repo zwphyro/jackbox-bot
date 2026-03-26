@@ -17,6 +17,11 @@ class SurviveTheInternetRepository:
         await black_box.wait_for(state="visible")
         return await black_box.inner_text()
 
+    async def get_content_type(self):
+        context_type_locator = self._page.locator("#input-text-textarea")
+        await context_type_locator.wait_for(state="visible")
+        return await context_type_locator.get_attribute("placeholder") or ""
+
     async def get_image_description(self):
         final_image = self._page.locator(".finalRoundImage")
         await final_image.wait_for(state="visible")

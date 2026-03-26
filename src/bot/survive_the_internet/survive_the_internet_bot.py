@@ -16,6 +16,19 @@ from src.schemas import (
 log = getLogger(__name__)
 
 
+content_type_map = {
+    "вопрос": "question",
+    "локацию": "location",
+    "имя личности или персонажа": "name of person or character",
+    "название товара": "product name",
+    "название кампании": "crowdfunding campaign name",
+    "комментарий": "comment",
+    "заголовок новости": "news headline",
+    "хештег": "hashtag",
+    "название видео": "video title",
+}
+
+
 class SurviveTheInternetBot:
     def __init__(
         self, repository: SurviveTheInternetRepository, llm_service: LLMService
@@ -54,8 +67,13 @@ class SurviveTheInternetBot:
         log.info("Executing phase: Twist Response")
         context = await self._repository.get_context()
         question = await self._repository.get_question()
+        content_type = await self._repository.get_content_type()
 
-        payload = TwistRequest(context=context, question=question)
+        payload = TwistRequest(
+            context=context,
+            question=question,
+            content_type=content_type_map.get(content_type) or content_type,
+        )
         answer = await self._llm_service.generate_text_twist(payload)
 
         await self._repository.submit_response(answer)
