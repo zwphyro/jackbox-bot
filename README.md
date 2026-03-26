@@ -44,3 +44,7 @@ uv run task start --room-code <код комнаты>
 ```sh
 python -m cmd.jackbox_bot.main --room-code <код комнаты>
 ```
+
+## Поддерживаемые игры
+
+Сейчас бот поддерживает только *Survive The Internet*, в будущем также планируется поддержка *Joke boat* и *Quiplash*.
