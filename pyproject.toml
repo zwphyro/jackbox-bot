@@ -10,3 +10,13 @@ dependencies = [
     "pydantic>=2.12.5",
     "pydantic-settings>=2.13.1",
 ]
+
+[dependency-groups]
+dev = [
+    "taskipy>=1.14.1",
+]
+
+[tool.taskipy.tasks]
+start = "python -m cmd.jackbox_bot.main"
+
+list = "task --list"

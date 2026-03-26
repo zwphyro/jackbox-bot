@@ -39,7 +39,14 @@ async def step_executor(coroutine, max_retries: int = 3):
 async def main():
     argument_parser = ArgumentParser()
     argument_parser.add_argument(
-        "--room-code", required=True, help="The room code of the game to join."
+        "--room-code",
+        required=True,
+        help="The room code of the game to join.",
+    )
+    argument_parser.add_argument(
+        "--preview",
+        action="store_true",
+        help="Open a browser view of bot actions.",
     )
     args = argument_parser.parse_args()
 
@@ -48,7 +55,7 @@ async def main():
         browser = await p.chromium.launch(headless=False)
         context = await browser.new_context()
         page = await join_game(
-            get_settings().bot_name, get_settings.join_url, args.room_code, context
+            get_settings().bot_name, get_settings().join_url, args.room_code, context
         )
         repository = SurviveTheInternetRepository(page, 5 * 60 * 1000)
 
