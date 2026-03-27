@@ -1,0 +1,12 @@
+# INFO: You can overwrite any settings from config/settings.yaml 
+# by renaming this file to config/settings.local.yaml.
+
+# WARN: Required fields must be filled in order for the bot to work.
+
+llm:
+  # WARN: REQUIRED FIELD
+  api_key:
+
+  # INFO: Optional field, leave blank or comment if using OpenAI API
+  base_url: 
+

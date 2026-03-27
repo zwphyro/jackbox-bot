@@ -3,6 +3,7 @@
 
 ### dotenv ###
 .env
+config/settings.local.yaml
 
 ### Python ###
 # Byte-compiled / optimized / DLL files

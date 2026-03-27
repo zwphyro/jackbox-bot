@@ -1,0 +1,21 @@
+# INFO: This is the base config file for the bot.
+# Use config/settings.local.yaml to overwrite this 
+# settings and specify required local parameters.
+
+# INFO: Rename config/settings.local.example.yaml to get started.
+
+jackbox:
+  join_url: https://jackbox.fun/
+  bot_name: O-leg
+
+llm:
+  model: gpt-4o-2024-08-06 
+
+playwright:
+  timeout_min: 5
+  user_agent: >
+    Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36
+    (KHTML, like Gecko) Chrome/237.84.2.178 Safari/537.36
+
+logging:
+  level: INFO

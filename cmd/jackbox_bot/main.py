@@ -1,8 +1,8 @@
-from argparse import ArgumentParser
 import asyncio
 from openai import AsyncOpenAI
 from playwright.async_api import async_playwright
 from logging import getLogger
+from src.args import get_args
 from src.games.survive_the_internet.repository import (
     SurviveTheInternetRepository,
 )
@@ -37,32 +37,27 @@ async def step_executor(coroutine, max_retries: int = 3):
 
 
 async def main():
-    argument_parser = ArgumentParser()
-    argument_parser.add_argument(
-        "--room-code",
-        required=True,
-        help="The room code of the game to join.",
-    )
-    argument_parser.add_argument(
-        "--preview",
-        action="store_true",
-        help="Open a browser view of bot actions.",
-    )
-    args = argument_parser.parse_args()
+    settings = get_settings()
+    args = get_args()
 
     log.info("Initializing Playwright and browser context.")
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
-        context = await browser.new_context()
-        page = await join_game(
-            get_settings().bot_name, get_settings().join_url, args.room_code, context
+        browser = await p.chromium.launch(headless=not args.preview)
+        context = await browser.new_context(
+            user_agent=settings.playwright.user_agent if args.preview else None
         )
-        repository = SurviveTheInternetRepository(page, 5 * 60 * 1000)
+        page = await join_game(
+            settings.jackbox.bot_name,
+            settings.jackbox.join_url,
+            args.room_code,
+            context,
+        )
+        repository = SurviveTheInternetRepository(page, settings.playwright.timeout_ms)
 
         client = AsyncOpenAI(
-            base_url=get_settings().llm_base_url, api_key=get_settings().llm_api_key
+            base_url=settings.llm.base_url, api_key=settings.llm.api_key
         )
-        llm_proxy = SurviveTheInternetLLMProxy(client, get_settings().llm_model)
+        llm_proxy = SurviveTheInternetLLMProxy(client, settings.llm.model)
 
         try:
             bot = SurviveTheInternetBot(repository, llm_proxy)
