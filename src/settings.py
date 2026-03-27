@@ -2,7 +2,7 @@ from functools import lru_cache
 from math import ceil
 from pathlib import Path
 from typing import Annotated, Type
-from pydantic import BaseModel, Field, StringConstraints
+from pydantic import BaseModel, StringConstraints
 from pydantic_settings import (
     BaseSettings,
     PydanticBaseSettingsSource,

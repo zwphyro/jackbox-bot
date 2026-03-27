@@ -20,11 +20,8 @@ class SurviveTheInternetRepository:
         return await question_locator.inner_text()
 
     async def get_context(self):
-        log.info("Getting context")
         black_box = self._page.locator(".blackBox")
-        log.info("Waiting for black box to be visible")
         await black_box.wait_for(state="visible")
-        log.info("Getting context text")
         return await black_box.inner_text()
 
     async def get_content_type(self):
@@ -39,14 +36,10 @@ class SurviveTheInternetRepository:
         return await final_image.get_attribute("aria-label") or ""
 
     async def get_image_options(self):
-        log.info("Getting image options")
         choices_container = self._page.locator("#choicesRegion > div > *")
-        log.info("Waiting for choices container to be visible")
         await choices_container.first.wait_for(state="visible")
-        log.info("Getting image options")
 
         options = await choices_container.all()
-        log.info("Got image options")
         return [
             ImageChoiceOption(
                 index=index,

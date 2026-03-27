@@ -10,6 +10,7 @@ from src.logging import configure_logging
 from src.games.survive_the_internet.llm_proxy import SurviveTheInternetLLMProxy
 from src.games.survive_the_internet.bot import SurviveTheInternetBot
 from src.playwright import join_game
+from src.prompts import get_prompts
 from src.settings import get_settings
 
 configure_logging()
@@ -38,6 +39,7 @@ async def step_executor(coroutine, max_retries: int = 3):
 
 async def main():
     settings = get_settings()
+    prompts = get_prompts()
     args = get_args()
 
     log.info("Initializing Playwright and browser context.")
@@ -57,7 +59,11 @@ async def main():
         client = AsyncOpenAI(
             base_url=settings.llm.base_url, api_key=settings.llm.api_key
         )
-        llm_proxy = SurviveTheInternetLLMProxy(client, settings.llm.model)
+        llm_proxy = SurviveTheInternetLLMProxy(
+            client,
+            settings.llm.model,
+            prompts.survive_the_internet,
+        )
 
         try:
             bot = SurviveTheInternetBot(repository, llm_proxy)
