@@ -1,10 +1,11 @@
 from logging import getLogger
 
-from src.bot.survive_the_internet.survive_the_internet_repository import (
+from src.games.survive_the_internet.enums import ContentTypeEnum
+from src.games.survive_the_internet.repository import (
     SurviveTheInternetRepository,
 )
-from src.llm_service import LLMService
-from src.schemas import (
+from src.games.survive_the_internet.llm_proxy import SurviveTheInternetLLMProxy
+from src.games.survive_the_internet.schemas import (
     ImageChoiceRequest,
     ImageTwistRequest,
     ImageVoteRequest,
@@ -16,25 +17,14 @@ from src.schemas import (
 log = getLogger(__name__)
 
 
-content_type_map = {
-    "вопрос": "question",
-    "локацию": "location",
-    "имя личности или персонажа": "name of person or character",
-    "название товара": "product name",
-    "название кампании": "crowdfunding campaign name",
-    "комментарий": "comment",
-    "заголовок новости": "news headline",
-    "хештег": "hashtag",
-    "название видео": "video title",
-}
-
-
 class SurviveTheInternetBot:
     def __init__(
-        self, repository: SurviveTheInternetRepository, llm_service: LLMService
+        self,
+        repository: SurviveTheInternetRepository,
+        llm_proxy: SurviveTheInternetLLMProxy,
     ):
         self._repository = repository
-        self._llm_service = llm_service
+        self._llm_proxy = llm_proxy
 
     @property
     def queue(self):
@@ -58,7 +48,7 @@ class SurviveTheInternetBot:
         question = await self._repository.get_question()
 
         payload = InitialRequest(question=question)
-        response = await self._llm_service.generate_initial_response(payload)
+        response = await self._llm_proxy.generate_initial_response(payload)
 
         await self._repository.submit_response(response)
         log.info("Initial Response phase completed.")
@@ -72,9 +62,9 @@ class SurviveTheInternetBot:
         payload = TwistRequest(
             context=context,
             question=question,
-            content_type=content_type_map.get(content_type) or content_type,
+            content_type=ContentTypeEnum(content_type).to_readable(),
         )
-        answer = await self._llm_service.generate_text_twist(payload)
+        answer = await self._llm_proxy.generate_text_twist(payload)
 
         await self._repository.submit_response(answer)
         log.info("Twist Response phase completed.")
@@ -84,7 +74,7 @@ class SurviveTheInternetBot:
         options = await self._repository.get_text_voting_options()
 
         payload = TextVoteRequest(options=options)
-        selected_index = await self._llm_service.choose_text_vote(payload)
+        selected_index = await self._llm_proxy.choose_text_vote(payload)
 
         if 0 <= selected_index < len(options):
             await self._repository.select_option(selected_index)
@@ -96,11 +86,11 @@ class SurviveTheInternetBot:
     async def image_choice(self):
         log.info("Executing phase: Image Choice")
         question = await self._repository.get_context()
-
+        log.info(f"Question: {question}")
         options = await self._repository.get_image_options()
 
         payload = ImageChoiceRequest(question=question, options=options)
-        selected_index = await self._llm_service.choose_image(payload)
+        selected_index = await self._llm_proxy.choose_image(payload)
 
         if 0 <= selected_index < len(options):
             await self._repository.select_option(selected_index)
@@ -117,7 +107,7 @@ class SurviveTheInternetBot:
         payload = ImageTwistRequest(
             image_description=image_description, question=prompt_text
         )
-        answer = await self._llm_service.generate_image_twist(payload)
+        answer = await self._llm_proxy.generate_image_twist(payload)
 
         await self._repository.submit_response(answer)
         log.info("Image Twist phase completed.")
@@ -127,7 +117,7 @@ class SurviveTheInternetBot:
         options = await self._repository.get_image_voting_options()
 
         payload = ImageVoteRequest(options=options)
-        selected_index = await self._llm_service.choose_image_vote(payload)
+        selected_index = await self._llm_proxy.choose_image_vote(payload)
 
         if 0 <= selected_index < len(options):
             await self._repository.select_option(selected_index)

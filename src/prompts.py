@@ -1,7 +1,8 @@
 STYLE = """
-- cynical
-- uncomfortable
-- borderline inappropriate
+- dark humor
+- humor about death
+- humor about politics
+- adult topics
 """
 
 BASE_PROMPT = """

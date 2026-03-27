@@ -9,7 +9,7 @@ from src.prompts import (
     get_text_twist_prompt,
     get_text_vote_prompt,
 )
-from src.schemas import (
+from src.games.survive_the_internet.schemas import (
     BasePromptPayload,
     ImageChoiceRequest,
     ImageTwistRequest,
@@ -22,10 +22,28 @@ from src.schemas import (
 log = getLogger(__name__)
 
 
-class LLMService:
+class SurviveTheInternetLLMProxy:
     def __init__(self, client: AsyncOpenAI, model: str):
         self._client = client
         self._model = model
+
+    async def _execute_prompt(
+        self, system_prompt: str, request: BasePromptPayload, temperature: float
+    ) -> str:
+        content = request.model_dump_prompt()
+        log.debug(f"Sending payload to LLM: {content}")
+
+        response = await self._client.chat.completions.create(
+            model=self._model,
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": content},
+            ],
+            temperature=temperature,
+        )
+        result = response.choices[0].message.content.strip()
+        log.debug(f"Received response from LLM: {result}")
+        return result
 
     async def generate_initial_response(self, request: InitialRequest) -> str:
         log.info("Generating initial response without context.")
@@ -77,21 +95,3 @@ class LLMService:
         except ValueError:
             log.warning(f"Failed to parse integer from LLM: {result}. Defaulting to 0.")
             return 0
-
-    async def _execute_prompt(
-        self, system_prompt: str, request: BasePromptPayload, temperature: float
-    ) -> str:
-        content = request.model_dump_prompt()
-        log.debug(f"Sending payload to LLM: {content}")
-
-        response = await self._client.chat.completions.create(
-            model=self._model,
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": content},
-            ],
-            temperature=temperature,
-        )
-        result = response.choices[0].message.content.strip()
-        log.debug(f"Received response from LLM: {result}")
-        return result

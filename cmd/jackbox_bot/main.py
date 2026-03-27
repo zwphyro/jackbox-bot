@@ -3,12 +3,12 @@ import asyncio
 from openai import AsyncOpenAI
 from playwright.async_api import async_playwright
 from logging import getLogger
-from src.bot.survive_the_internet.survive_the_internet_repository import (
+from src.games.survive_the_internet.repository import (
     SurviveTheInternetRepository,
 )
 from src.logging import configure_logging
-from src.llm_service import LLMService
-from src.bot.survive_the_internet.survive_the_internet_bot import SurviveTheInternetBot
+from src.games.survive_the_internet.llm_proxy import SurviveTheInternetLLMProxy
+from src.games.survive_the_internet.bot import SurviveTheInternetBot
 from src.playwright import join_game
 from src.settings import get_settings
 
@@ -62,10 +62,10 @@ async def main():
         client = AsyncOpenAI(
             base_url=get_settings().llm_base_url, api_key=get_settings().llm_api_key
         )
-        llm_service = LLMService(client, get_settings().llm_model)
+        llm_proxy = SurviveTheInternetLLMProxy(client, get_settings().llm_model)
 
         try:
-            bot = SurviveTheInternetBot(repository, llm_service)
+            bot = SurviveTheInternetBot(repository, llm_proxy)
         except Exception:
             log.critical("Bot failed to join game. Closing browser.")
             await browser.close()
