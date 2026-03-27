@@ -70,10 +70,11 @@ class Prompts(BaseSettings):
         return (
             init_settings,
             YamlConfigSettingsSource(
-                settings_cls, yaml_file=CONFIG_DIR / "prompts.yaml"
-            ),
-            YamlConfigSettingsSource(
-                settings_cls, yaml_file=CONFIG_DIR / "prompts.local.yaml"
+                settings_cls,
+                yaml_file=[
+                    CONFIG_DIR / "prompts.yaml",
+                    CONFIG_DIR / "prompts.local.yaml",
+                ],
             ),
             env_settings,
         )
