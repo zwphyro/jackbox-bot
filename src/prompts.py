@@ -35,7 +35,7 @@ class SurviveTheInternetPrompts(BasePromptGroup):
         return self._format("initial_response")
 
     def get_text_twist(self, content_type: str):
-        return self._format("initial_response", content_type=content_type)
+        return self._format("text_twist", content_type=content_type)
 
     def get_text_vote(self):
         return self._format("text_vote")

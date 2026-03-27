@@ -56,10 +56,11 @@ class Settings(BaseSettings):
         return (
             init_settings,
             YamlConfigSettingsSource(
-                settings_cls, yaml_file=CONFIG_DIR / "settings.yaml"
-            ),
-            YamlConfigSettingsSource(
-                settings_cls, yaml_file=CONFIG_DIR / "settings.local.yaml"
+                settings_cls,
+                yaml_file=[
+                    CONFIG_DIR / "settings.yaml",
+                    CONFIG_DIR / "settings.local.yaml",
+                ],
             ),
             env_settings,
         )

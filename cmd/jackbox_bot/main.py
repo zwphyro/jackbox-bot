@@ -45,9 +45,7 @@ async def main():
     log.info("Initializing Playwright and browser context.")
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=not args.preview)
-        context = await browser.new_context(
-            user_agent=settings.playwright.user_agent if args.preview else None
-        )
+        context = await browser.new_context(user_agent=settings.playwright.user_agent)
         page = await join_game(
             settings.jackbox.bot_name,
             settings.jackbox.join_url,
