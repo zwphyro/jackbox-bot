@@ -9,4 +9,3 @@ llm:
 
   # INFO: Optional field, leave blank or comment if using OpenAI API
   base_url: 
-
