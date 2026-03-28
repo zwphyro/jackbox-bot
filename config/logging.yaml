@@ -1,0 +1,29 @@
+version: 1
+disable_existing_loggers: false
+
+formatters:
+  simple:
+    format: "%(message)s"
+
+handlers:
+  console:
+    class: rich.logging.RichHandler
+    level: DEBUG
+    formatter: simple
+    rich_tracebacks: true
+    markup: true
+
+loggers:
+  src:
+    level: INFO
+    handlers: [console]
+    propagate: false
+
+  __main__:
+    level: INFO 
+    handlers: [console]
+    propagate: false
+
+root:
+  level: WARNING
+  handlers: [console]

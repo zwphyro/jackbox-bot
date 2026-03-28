@@ -6,18 +6,20 @@ from src.args import get_args
 from src.games.survive_the_internet.repository import (
     SurviveTheInternetRepository,
 )
-from src.logging import configure_logging
+from src.logging import setup_logging
 from src.games.survive_the_internet.llm_proxy import SurviveTheInternetLLMProxy
 from src.games.survive_the_internet.bot import SurviveTheInternetBot
 from src.playwright import join_game
 from src.prompts import get_prompts
 from src.settings import get_settings
 
-configure_logging()
+
 log = getLogger(__name__)
 
 
 async def step_executor(coroutine, max_retries: int = 3):
+    log = getLogger(__name__)
+
     phase_name = coroutine.__name__
     for i in range(max_retries):
         attempt = i + 1
@@ -41,6 +43,8 @@ async def main():
     settings = get_settings()
     prompts = get_prompts()
     args = get_args()
+
+    setup_logging(settings.logging.level)
 
     log.info("Initializing Playwright and browser context.")
     async with async_playwright() as p:
