@@ -13,22 +13,17 @@ from src.games.survive_the_internet.schemas import (
     TextVoteRequest,
     TwistRequest,
 )
+from src.interfaces.bot import BaseBot
 
 log = getLogger(__name__)
 
 
-class SurviveTheInternetBot:
-    def __init__(
-        self,
-        repository: SurviveTheInternetRepository,
-        llm_proxy: SurviveTheInternetLLMProxy,
-    ):
-        self._repository = repository
-        self._llm_proxy = llm_proxy
-
+class SurviveTheInternetBot(
+    BaseBot[SurviveTheInternetRepository, SurviveTheInternetLLMProxy]
+):
     @property
-    def queue(self):
-        return [
+    def tasks(self):
+        stages = [
             self.initial_response,
             self.twist_response,
             self.text_voting,
@@ -42,6 +37,9 @@ class SurviveTheInternetBot:
             self.image_twist,
             self.image_voting,
         ]
+
+        for stage in stages:
+            yield stage
 
     async def initial_response(self):
         log.info("Executing phase: Initial Response")

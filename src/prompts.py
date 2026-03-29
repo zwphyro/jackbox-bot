@@ -1,5 +1,5 @@
 from functools import lru_cache
-from typing import Any, Type
+from typing import Any
 from pydantic import BaseModel, PrivateAttr
 from pydantic_settings import (
     BaseSettings,
@@ -18,7 +18,7 @@ class BasePromptGroup(BaseModel):
         self._base = base
         self._style = style
 
-    def _format(self, field_name: str, **kwargs: Any) -> str:
+    def _format(self, field_name: str, **kwargs: Any):
         template = getattr(self, field_name)
         return template.format(base=self._base, style=self._style, **kwargs)
 
@@ -55,13 +55,13 @@ class Prompts(BaseSettings):
     base: str
     survive_the_internet: SurviveTheInternetPrompts
 
-    def model_post_init(self, __context: Any) -> None:
+    def model_post_init(self, __context: Any):
         self.survive_the_internet._setup_context(base=self.base, style=self.style)
 
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,

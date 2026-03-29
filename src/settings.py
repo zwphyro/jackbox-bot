@@ -1,7 +1,7 @@
 from functools import lru_cache
 from math import ceil
 from pathlib import Path
-from typing import Annotated, Type
+from typing import Annotated
 from pydantic import BaseModel, StringConstraints
 from pydantic_settings import (
     BaseSettings,
@@ -47,7 +47,7 @@ class Settings(BaseSettings):
     @classmethod
     def settings_customise_sources(
         cls,
-        settings_cls: Type[BaseSettings],
+        settings_cls: type[BaseSettings],
         init_settings: PydanticBaseSettingsSource,
         env_settings: PydanticBaseSettingsSource,
         dotenv_settings: PydanticBaseSettingsSource,

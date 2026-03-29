@@ -1,19 +1,15 @@
 from logging import getLogger
-from playwright.async_api import Page
 from src.games.survive_the_internet.schemas import (
     ImageChoiceOption,
     ImageVotingOption,
     TextVotingOption,
 )
+from src.interfaces.repository import BaseRepository
 
 log = getLogger(__name__)
 
 
-class SurviveTheInternetRepository:
-    def __init__(self, page: Page, timeout: int):
-        self._page = page
-        self._page.set_default_timeout(timeout)
-
+class SurviveTheInternetRepository(BaseRepository):
     async def get_question(self):
         question_locator = self._page.locator(".belowBlackBox")
         await question_locator.wait_for(state="visible")

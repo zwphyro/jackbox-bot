@@ -3,14 +3,11 @@ from openai import AsyncOpenAI
 from playwright.async_api import async_playwright
 from logging import getLogger
 from src.args import get_args
-from src.games.survive_the_internet.repository import (
-    SurviveTheInternetRepository,
-)
+from src.enums import GamesEnum
 from src.logging import setup_logging
-from src.games.survive_the_internet.llm_proxy import SurviveTheInternetLLMProxy
-from src.games.survive_the_internet.bot import SurviveTheInternetBot
 from src.playwright import join_game
-from src.prompts import get_prompts
+from src.games import setup_registry
+from src.registry import GameRegistry
 from src.settings import get_settings
 
 
@@ -41,10 +38,10 @@ async def step_executor(coroutine, max_retries: int = 3):
 
 async def main():
     settings = get_settings()
-    prompts = get_prompts()
     args = get_args()
 
     setup_logging(settings.logging.level)
+    setup_registry()
 
     log.info("Initializing Playwright and browser context.")
     async with async_playwright() as p:
@@ -56,25 +53,28 @@ async def main():
             args.room_code,
             context,
         )
-        repository = SurviveTheInternetRepository(page, settings.playwright.timeout_ms)
-
         client = AsyncOpenAI(
             base_url=settings.llm.base_url, api_key=settings.llm.api_key
         )
-        llm_proxy = SurviveTheInternetLLMProxy(
+
+        game_entry = GameRegistry.get_game_entry(GamesEnum.SurviveTheInternet)
+
+        repository = game_entry.repository(page, settings.playwright.timeout_ms)
+
+        llm_proxy = game_entry.llm_proxy(
             client,
             settings.llm.model,
-            prompts.survive_the_internet,
+            game_entry.prompts,
         )
 
         try:
-            bot = SurviveTheInternetBot(repository, llm_proxy)
+            bot = game_entry.bot(repository, llm_proxy)
         except Exception:
             log.critical("Bot failed to join game. Closing browser.")
             await browser.close()
             return
 
-        for task_coroutine in bot.queue:
+        for task_coroutine in bot.tasks:
             await step_executor(task_coroutine)
 
         log.info("All queued tasks finished. Closing browser.")

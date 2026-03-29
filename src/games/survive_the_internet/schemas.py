@@ -1,11 +1,4 @@
-from abc import abstractmethod
-from pydantic import BaseModel
-
-
-class BasePromptPayload(BaseModel):
-    @abstractmethod
-    def model_dump_prompt(self):
-        raise NotImplementedError
+from src.schemas import BasePromptPayload
 
 
 class InitialRequest(BasePromptPayload):
