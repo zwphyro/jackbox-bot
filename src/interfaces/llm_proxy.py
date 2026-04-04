@@ -1,11 +1,13 @@
+from __future__ import annotations
 from abc import ABC
 from logging import getLogger
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
 from openai import AsyncOpenAI
 
-from src.schemas import BasePromptPayload
-from src.prompts import BasePromptGroup
+if TYPE_CHECKING:
+    from src.schemas import BasePromptPayload
+    from src.prompts import BasePromptGroup
 
 log = getLogger()
 

@@ -1,10 +1,12 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
 import asyncio
 from logging import getLogger
-from typing import Generic, TypeVar
+from typing import TYPE_CHECKING, Generic, TypeVar
 
-from src.interfaces.llm_proxy import BaseLLMProxy
-from src.interfaces.repository import BaseRepository
+if TYPE_CHECKING:
+    from src.interfaces.llm_proxy import BaseLLMProxy
+    from src.interfaces.repository import BaseRepository
 
 Repository = TypeVar("Repository", bound=BaseRepository)
 LLMProxy = TypeVar("LLMProxy", bound=BaseLLMProxy)
@@ -30,7 +32,7 @@ class BaseBot(ABC, Generic[Repository, LLMProxy]):
         for task_coroutine in self.tasks:
             await self._execute_step(task_coroutine)
 
-    async def _execute_step(self, coroutine: callable[...], max_retries: int = 3):
+    async def _execute_step(self, coroutine: callable, max_retries: int = 3):
         phase_name = coroutine.__name__
         for i in range(max_retries):
             attempt = i + 1
