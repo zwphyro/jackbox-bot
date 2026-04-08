@@ -1,9 +1,16 @@
+from __future__ import annotations
+from typing import TYPE_CHECKING
+
 from src.enums import GamesEnum
-from src.interfaces.bot import BaseBot
-from src.interfaces.llm_proxy import BaseLLMProxy
-from src.interfaces.repository import BaseRepository
-from src.prompts import BasePromptGroup
 from src.schemas import GameEntry
+
+if TYPE_CHECKING:
+    from src.interfaces.core import (
+        BotProtocol,
+        LLMProxyProtocol,
+        RepositoryProtocol,
+        PromptGroupProtocol,
+    )
 
 
 class GameRegistry:
@@ -13,10 +20,10 @@ class GameRegistry:
     def register(
         cls,
         game: GamesEnum,
-        bot: type[BaseBot],
-        repository: type[BaseRepository],
-        llm_proxy: type[BaseLLMProxy],
-        prompts: BasePromptGroup,
+        bot: type[BotProtocol],
+        repository: type[RepositoryProtocol],
+        llm_proxy: type[LLMProxyProtocol],
+        prompts: PromptGroupProtocol,
     ):
         cls._games[game] = GameEntry(
             bot=bot, repository=repository, llm_proxy=llm_proxy, prompts=prompts

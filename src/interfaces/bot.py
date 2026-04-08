@@ -8,8 +8,8 @@ if TYPE_CHECKING:
     from src.interfaces.llm_proxy import BaseLLMProxy
     from src.interfaces.repository import BaseRepository
 
-Repository = TypeVar("Repository", bound=BaseRepository)
-LLMProxy = TypeVar("LLMProxy", bound=BaseLLMProxy)
+Repository = TypeVar("Repository", bound="BaseRepository")
+LLMProxy = TypeVar("LLMProxy", bound="BaseLLMProxy")
 
 log = getLogger(__name__)
 

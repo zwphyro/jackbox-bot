@@ -11,7 +11,7 @@ if TYPE_CHECKING:
 
 log = getLogger()
 
-Prompts = TypeVar("Prompts", bound=BasePromptGroup)
+Prompts = TypeVar("Prompts", bound="BasePromptGroup")
 
 
 class BaseLLMProxy(ABC, Generic[Prompts]):
@@ -21,7 +21,7 @@ class BaseLLMProxy(ABC, Generic[Prompts]):
         self._prompts = prompts
 
     async def _execute_prompt(
-        self, system_prompt: str, request: BasePromptPayload, temperature: float
+        self, system_prompt: str, request: "BasePromptPayload", temperature: float
     ):
         content = request.model_dump_prompt()
         log.debug(f"Sending payload to LLM: {content}")
