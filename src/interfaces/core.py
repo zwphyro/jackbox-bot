@@ -10,7 +10,6 @@ if TYPE_CHECKING:
 class BotProtocol(Protocol):
     """Protocol for bot interface"""
 
-    @property
     @abstractmethod
     def tasks(self):
         raise NotImplementedError

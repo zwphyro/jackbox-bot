@@ -1,16 +1,14 @@
 from __future__ import annotations
 from abc import abstractmethod
-from typing import TYPE_CHECKING
 
 from pydantic import BaseModel
 
-if TYPE_CHECKING:
-    from src.interfaces.core import (
-        BotProtocol,
-        LLMProxyProtocol,
-        RepositoryProtocol,
-        PromptGroupProtocol,
-    )
+from src.interfaces.core import (
+    BotProtocol,
+    LLMProxyProtocol,
+    RepositoryProtocol,
+    PromptGroupProtocol,
+)
 
 
 class BasePromptPayload(BaseModel):
@@ -20,7 +18,12 @@ class BasePromptPayload(BaseModel):
 
 
 class GameEntry(BaseModel):
-    bot: type[BotProtocol]
-    repository: type[RepositoryProtocol]
-    llm_proxy: type[LLMProxyProtocol]
-    prompts: PromptGroupProtocol
+    bot: "type[BotProtocol]"
+    repository: "type[RepositoryProtocol]"
+    llm_proxy: "type[LLMProxyProtocol]"
+    prompts: "PromptGroupProtocol"
+
+    model_config = {"arbitrary_types_allowed": True}
+
+
+GameEntry.model_rebuild()
