@@ -42,7 +42,7 @@ uv run task start --room-code <код комнаты>
 ```
 Или:
 ```sh
-python -m cmd.jackbox_bot.main --room-code <код комнаты>
+python -m command.main --room-code <код комнаты>
 ```
 
 ## Поддерживаемые игры
