@@ -1,49 +1,9 @@
-from __future__ import annotations
-from abc import abstractmethod
-from typing import Protocol, runtime_checkable, TypeVar, TYPE_CHECKING
+from typing import TypeVar
 
-if TYPE_CHECKING:
-    from src.schemas import BasePromptPayload
+from src.interfaces.llm_proxy import BaseLLMProxy
+from src.interfaces.repository import BaseRepository
+from src.prompts import BasePromptGroup
 
-
-@runtime_checkable
-class BotProtocol(Protocol):
-    """Protocol for bot interface"""
-
-    @abstractmethod
-    def tasks(self):
-        raise NotImplementedError
-
-    @abstractmethod
-    async def run(self):
-        raise NotImplementedError
-
-
-@runtime_checkable
-class LLMProxyProtocol(Protocol):
-    """Protocol for LLM proxy interface"""
-
-    @abstractmethod
-    async def _execute_prompt(
-        self, system_prompt: str, request: "BasePromptPayload", temperature: float
-    ):
-        raise NotImplementedError
-
-
-@runtime_checkable
-class RepositoryProtocol(Protocol):
-    """Protocol for repository interface"""
-
-    pass
-
-
-@runtime_checkable
-class PromptGroupProtocol(Protocol):
-    """Protocol for prompt group interface"""
-
-    pass
-
-
-Repository = TypeVar("Repository", bound=RepositoryProtocol)
-LLMProxy = TypeVar("LLMProxy", bound=LLMProxyProtocol)
-Prompts = TypeVar("Prompts", bound=PromptGroupProtocol)
+Repository = TypeVar("Repository", bound=BaseRepository)
+LLMProxy = TypeVar("LLMProxy", bound=BaseLLMProxy)
+Prompts = TypeVar("Prompts", bound=BasePromptGroup)

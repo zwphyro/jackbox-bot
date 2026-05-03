@@ -4,10 +4,10 @@ from playwright.async_api import async_playwright
 from logging import getLogger
 from src.args import get_args
 from src.enums import GamesEnum
+from src.factory import GameFactory
 from src.logging import setup_logging
 from src.playwright import join_game
 from src.games import setup_registry
-from src.registry import GameRegistry
 from src.settings import get_settings
 
 
@@ -35,18 +35,15 @@ async def main():
             base_url=settings.llm.base_url, api_key=settings.llm.api_key
         )
 
-        game_entry = GameRegistry.get_game_entry(GamesEnum.SurviveTheInternet)
-
-        repository = game_entry.repository(page, settings.playwright.timeout_ms)
-
-        llm_proxy = game_entry.llm_proxy(
-            client,
-            settings.llm.model,
-            game_entry.prompts,
+        factory = GameFactory(
+            page=page,
+            client=client,
+            timeout=settings.playwright.timeout_ms,
+            model=settings.llm.model,
         )
 
         try:
-            bot = game_entry.bot(repository, llm_proxy)
+            bot = factory.create_bot(GamesEnum.SurviveTheInternet)
         except Exception:
             log.critical("Bot failed to join game. Closing browser.")
             await browser.close()

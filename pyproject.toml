@@ -18,6 +18,6 @@ dev = [
 ]
 
 [tool.taskipy.tasks]
-start = "python -m cmd.jackbox_bot.main"
+start = "python -m command.main"
 
 list = "task --list"
