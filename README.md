@@ -1,50 +1,50 @@
-# Jackbox bot
+### Jackbox bot
 
-## Конфигурация
+#### Configuration
 
-Для конфигурации приложения используется файл `settings.local.yaml`, скопируйте файл [`settings.local.example.yaml`](config/settings.local.example.yaml) и переименуете его в `settings.local.yaml`, укажите в нем ключ для доступа к *OpenAI API* или любому другому провайдеру, поддерживающему работу с библиотекой `openai`, в поле `api_key`.
+The application is configured via the `settings.local.yaml` file. Copy the [`settings.local.example.yaml`](config/settings.local.example.yaml) file, rename it to `settings.local.yaml`, and set the `api_key` field to your key for the *OpenAI API* or any other provider compatible with the `openai` library.
 
-## Запуск
+#### Running
 
 > [!WARNING]
-> *Python* версии не ниже 3.13 должен быть установлен на вашем устройстве!  
-> Предпочтительно использовать *uv* для управления зависимостями и запуска.
+> *Python* 3.13 or higher must be installed on your device!  
+> Using *uv* for dependency management and running the app is recommended.
 
-### Установка зависимостей
+##### Installing dependencies
 
-Если вы используете *uv*, введите следующую команды:
+If you are using *uv*, run the following commands:
 ```sh
 uv sync --locked
 source .venv/bin/activate
-``` 
-Если вы используете *poetry*, введите следующие команды:
+```
+If you are using *poetry*, run the following commands:
 ```sh
 poetry install --no-root
 eval $(poetry env activate)
-``` 
-Иначе используйте *pip*:
+```
+Otherwise, use *pip*:
 ```sh
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Далее установите зависимости *playwright*:
+Next, install the *playwright* dependencies:
 ```sh
 playwright install chromium
 ```
 
-### Запуск
+##### Starting the app
 
-Запустите приложение локально с помощью следующей команды:
+Run the application locally with the following command:
 ```sh
-uv run task start --room-code <код комнаты>
+uv run task start --room-code <room code>
 ```
-Или:
+Or:
 ```sh
-python -m command.main --room-code <код комнаты>
+python -m command.main --room-code <room code>
 ```
 
-## Поддерживаемые игры
+#### Supported games
 
-Сейчас бот поддерживает только *Survive The Internet*, в будущем также планируется поддержка *Joke boat* и *Quiplash*.
+Currently, the bot only supports *Survive The Internet*. Support for *Joke Boat* and *Quiplash* is planned for the future.
